@@ -33,7 +33,7 @@ jobs:
         echo "Current working directory: $(pwd)"
         echo "Directory structure before execution:"
         ls -la
-        python -u script.py
+        python -u test.py
 
     - name: Check logs after execution
       run: |
