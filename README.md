@@ -1,2 +1,35 @@
 # TenderScrapper
-Scrape data from Goverment sites and saves the 
+Scrape data from Goverment sites and saves the data in a json file.
+Data updated every 12 hours.
+
+Urls That are being scraped:
+'https://angul.odisha.gov.in/tender',
+'https://balangir.odisha.gov.in/tender',
+'https://balasore.odisha.gov.in/tender',
+'https://bargarh.odisha.gov.in/tender',
+'https://bhadrak.odisha.gov.in/tender',
+'https://boudh.odisha.gov.in/tender',
+'https://cuttack.odisha.gov.in/tender',
+'https://deogarh.odisha.gov.in/tender',
+'https://dhenkanal.odisha.gov.in/tender',
+'https://gajapati.odisha.gov.in/tender',
+'https://ganjam.odisha.gov.in/tender',
+'https://jagatsinghpur.odisha.gov.in/tender',
+'https://jajpur.odisha.gov.in/tender',
+'https://jharsuguda.odisha.gov.in/tender',
+'https://kalahandi.odisha.gov.in/tender',
+'https://kandhamal.odisha.gov.in/tender',
+'https://kendrapara.odisha.gov.in/tender',
+'https://kendujhar.odisha.gov.in/tender',
+'https://khordha.odisha.gov.in/tender',
+'https://koraput.odisha.gov.in/tender',
+'https://malkangiri.odisha.gov.in/tender',
+'https://mayurbhanj.odisha.gov.in/tender',
+'https://nabarangpur.odisha.gov.in/tender',
+'https://nayagarh.odisha.gov.in/tender',
+'https://nuapada.odisha.gov.in/tender',
+'https://puri.odisha.gov.in/tender',
+'https://rayagada.odisha.gov.in/tender',
+'https://sambalpur.odisha.gov.in/tender',
+'https://subarnapur.odisha.gov.in/tender',
+'https://sundargarh.odisha.gov.in/tender'
