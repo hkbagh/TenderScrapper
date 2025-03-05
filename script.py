@@ -34,9 +34,11 @@ def scrape_data(url):
     try:
         response = requests.get(url)
         response.raise_for_status()
+        print("data scrapped...")
 
         soup = BeautifulSoup(response.content, "html.parser")
         table = soup.find("table")
+        print("table found...")
 
         if table is None:
             logging.warning(f"No table found on the given URL: {url}")
@@ -57,6 +59,7 @@ def scrape_data(url):
                 links = [urljoin(url, link_tag["href"]) for link_tag in link_tags if "href" in link_tag.attrs]
                 row_data[-1] = "; ".join(links)  # Join with semicolon
             data.append(row_data)
+        print("table created and data stored...")    
 
         # Get district name and add to each row
         district_name = url.split(".")[0].split("//")[1].capitalize()
@@ -78,6 +81,7 @@ def scrape_data(url):
 
 
 def create_json(data, json_filename):
+    print("creating json file...")
     """
     Creates a JSON file from a Pandas DataFrame.
 
@@ -99,12 +103,13 @@ def create_json(data, json_filename):
 # urls = ['https://sundargarh.odisha.gov.in/tender'] # remove the hardcoded list
 
 all_data = []
+print("ready to parse urls")
 for url in urls:
     df = scrape_data(url)
     if df is not None:
         all_data.append(df)
-
+print("data collected")
 # Filter the data *before* creating the JSON
 filtered_data = filter_by_date(pd.concat(all_data, ignore_index=True).to_dict('records'))
-
+print("data filtered")
 create_json(filtered_data, "tenders.json")
