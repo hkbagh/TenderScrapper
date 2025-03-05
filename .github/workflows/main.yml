@@ -2,7 +2,7 @@ name: main
 
 on:
   schedule:
-    - cron: '0 0,12 * * *'  # Runs at 00:00 (12 AM) and 12:00 (12 PM) every day
+    - cron: '*/20 * * * *'  # Runs at 00:00 (12 AM) and 12:00 (12 PM) every day
 
 jobs:
   test:
