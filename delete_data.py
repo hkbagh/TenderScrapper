@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 
-def filter_by_date(data, today_date_str=None):
+def filter_by_date(data, today_date_str=None): # todaay_date_str expects the format "YYYY-MM-DD"
     """
     Filters a list of dictionaries, keeping only entries where the 'End Date'
     is greater than today's date.  Assumes 'End Date' is in 'DD-MM-YYYY' format.
