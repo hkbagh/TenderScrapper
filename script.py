@@ -6,110 +6,111 @@ from delete_data import filter_by_date
 from urls import urls
 import logging
 import os
+import time
 from datetime import datetime
-print("start")
-# Create logs directory if it doesn't exist
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+# Configure logging
 if not os.path.exists("logs"):
     os.makedirs("logs")
 
-# Configure logging
 log_filename = f"logs/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.log"
 logging.basicConfig(
     filename=log_filename,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
-print("log file created")
-def scrape_data(url):
-    """
-    Scrapes a table from a given URL, extracts all links from the last column,
-    and returns the data as a Pandas DataFrame.
 
-    Args:
-        url (str): The URL of the webpage containing the table.
+def create_session():
+    """Create HTTP session with retries and headers"""
+    session = requests.Session()
+    
+    retries = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods=["GET"]
+    )
+    
+    session.mount('https://', HTTPAdapter(max_retries=retries))
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+    })
+    return session
 
-    Returns:
-        pd.DataFrame: The scraped data as a DataFrame, or None if an error occurred.
-    """
+def scrape_data(url, session):
+    """Scrape table data from URL with error handling"""
     try:
-        response = requests.get(url)
+        start_time = time.time()
+        logging.info(f"Scraping: {url}")
+        
+        response = session.get(url, timeout=10)
         response.raise_for_status()
-        print("data scrapped...")
-
+        
         soup = BeautifulSoup(response.content, "html.parser")
         table = soup.find("table")
-        print("table found...")
-
-        if table is None:
-            logging.warning(f"No table found on the given URL: {url}")
+        
+        if not table:
+            logging.warning(f"No table found at {url}")
             return None
 
+        # Data extraction logic
         headers = [th.text.strip() for th in table.find_all("th")]
-        headers.insert(0, "District")  # Add "District" to headers
-
+        headers.insert(0, "District")
+        
         data = []
         for row in table.find_all("tr")[1:]:
             cols = row.find_all("td")
             row_data = [col.text.strip() for col in cols]
-
-            # Extract all links from the last column and join them
+            
             if cols:
                 last_col = cols[-1]
-                link_tags = last_col.find_all("a")
-                links = [urljoin(url, link_tag["href"]) for link_tag in link_tags if "href" in link_tag.attrs]
-                row_data[-1] = "; ".join(links)  # Join with semicolon
+                links = [
+                    urljoin(url, link["href"]) 
+                    for link in last_col.find_all("a", href=True)
+                ]
+                row_data[-1] = "; ".join(links)
+                
             data.append(row_data)
-        print("table created and data stored...")    
-
-        # Get district name and add to each row
-        district_name = url.split(".")[0].split("//")[1].capitalize()
+        
+        # Add district name
+        district = url.split("//")[1].split(".")[0].capitalize()
         for row in data:
-            row.insert(0, district_name)
-
-        df = pd.DataFrame(data, columns=headers)
-        print(f"Table data from {url}")
-        logging.info(f"Table data from {url}")
-        return df
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error during request: {e}")
-        logging.error(f"Error during request: {e}")
-        return None
+            row.insert(0, district)
+            
+        logging.info(f"Scraped {url} in {time.time()-start_time:.2f}s")
+        return pd.DataFrame(data, columns=headers)
+        
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
+        logging.error(f"Failed {url}: {str(e)}")
         return None
 
+def create_json(data, filename="tenders.json"):
+    """Save filtered data to JSON"""
+    if not data:
+        logging.warning("No data to save")
+        return
+    
+    try:
+        df = pd.DataFrame(data)
+        df.to_json(filename, orient="records", indent=4)
+        logging.info(f"Saved {len(df)} records to {filename}")
+    except Exception as e:
+        logging.error(f"Failed to save JSON: {str(e)}")
 
-def create_json(data, json_filename):
-    print("creating json file...")
-    """
-    Creates a JSON file from a Pandas DataFrame.
-
-    Args:
-        data (pd.DataFrame): The DataFrame to be saved.
-        json_filename (str): The desired filename for the JSON output.
-    """
-    if data:
-        # Convert list of dicts (from filtering) to DataFrame
-        final_df = pd.DataFrame(data)
-        final_df.to_json(json_filename, orient="records", indent=4)
-        print(f"Combined data saved to {json_filename}")
-        logging.info(f"Combined data saved to {json_filename}")
-    else:
-        logging.warning("No data to save to JSON.")
-
-
-# Example usage
-# urls = ['https://sundargarh.odisha.gov.in/tender'] # remove the hardcoded list
-
-all_data = []
-print("ready to parse urls")
-for url in urls:
-    df = scrape_data(url)
-    if df is not None:
-        all_data.append(df)
-print("data collected")
-# Filter the data *before* creating the JSON
-filtered_data = filter_by_date(pd.concat(all_data, ignore_index=True).to_dict('records'))
-print("data filtered")
-create_json(filtered_data, "tenders.json")
+if __name__ == "__main__":
+    session = create_session()
+    all_data = []
+    
+    for idx, url in enumerate(urls):
+        if idx > 0:
+            time.sleep(2)  # Rate limiting
+            
+        df = scrape_data(url, session)
+        if df is not None:
+            all_data.append(df)
+    
+    filtered = filter_by_date(pd.concat(all_data).to_dict("records"))
+    create_json(filtered)
