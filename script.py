@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
-print("log file created with name:", filename)
+print("log file created")
 def scrape_data(url):
     """
     Scrapes a table from a given URL, extracts all links from the last column,
