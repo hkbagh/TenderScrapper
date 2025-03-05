@@ -7,7 +7,7 @@ from urls import urls
 import logging
 import os
 from datetime import datetime
-
+print("start")
 # Create logs directory if it doesn't exist
 if not os.path.exists("logs"):
     os.makedirs("logs")
@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
-
+print("log file created with name:", filename)
 def scrape_data(url):
     """
     Scrapes a table from a given URL, extracts all links from the last column,
@@ -69,6 +69,7 @@ def scrape_data(url):
         return df
 
     except requests.exceptions.RequestException as e:
+        print(f"Error during request: {e}")
         logging.error(f"Error during request: {e}")
         return None
     except Exception as e:
@@ -88,6 +89,7 @@ def create_json(data, json_filename):
         # Convert list of dicts (from filtering) to DataFrame
         final_df = pd.DataFrame(data)
         final_df.to_json(json_filename, orient="records", indent=4)
+        print(f"Combined data saved to {json_filename}")
         logging.info(f"Combined data saved to {json_filename}")
     else:
         logging.warning("No data to save to JSON.")
