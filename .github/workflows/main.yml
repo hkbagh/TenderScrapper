@@ -2,49 +2,46 @@ name: Tender Scraper
 
 on:
   schedule:
-    - cron: '0 0,12 * * *'  # Runs at 00:00 (12 AM) and 12:00 (12 PM) every day
+    - cron: '0 0,12 * * *'  # 12 AM/PM UTC
   workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Prevent hangs
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4  # Optional: Also update checkout to v4
+      uses: actions/checkout@v4
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.12'
 
-    - name: Create logs directory
-      run: |
-        mkdir -p logs
-        sudo chmod 777 logs
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests beautifulsoup4 pandas
+        pip install requests beautifulsoup4 pandas urllib3
 
-    - name: Run script with debug
-      run: |
-        echo "Current working directory: $(pwd)"
-        echo "Directory structure before execution:"
-        ls -la
-        python -u script.py
+    - name: Create logs dir
+      run: mkdir -p logs
 
-    - name: Check logs after execution
-      run: |
-        echo "Directory structure after execution:"
-        ls -la
-        echo "Logs directory contents:"
-        ls -la logs/
+    - name: Run scraper
+      run: python -u script.py
 
-    - name: Upload logs as artifact
+    - name: Upload logs
+      uses: actions/upload-artifact@v4
       if: always()
-      uses: actions/upload-artifact@v4  # Critical fix here
       with:
         name: scraper-logs
         path: logs/
+        retention-days: 3
