@@ -21,3 +21,4 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
+logging.info(f"Loggggggggggggggggggggggggg Rohan is a nalua! kal se chatting kar kar ke chat liya hai")
