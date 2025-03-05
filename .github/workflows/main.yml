@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4  # Optional: Also update checkout to v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -21,7 +21,7 @@ jobs:
     - name: Create logs directory
       run: |
         mkdir -p logs
-        sudo chmod 777 logs  # Ensure write permissions
+        sudo chmod 777 logs
 
     - name: Install dependencies
       run: |
@@ -33,7 +33,7 @@ jobs:
         echo "Current working directory: $(pwd)"
         echo "Directory structure before execution:"
         ls -la
-        python -u test.py  # -u for unbuffered output
+        python -u script.py
 
     - name: Check logs after execution
       run: |
@@ -44,7 +44,7 @@ jobs:
 
     - name: Upload logs as artifact
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4  # Critical fix here
       with:
         name: scraper-logs
         path: logs/
