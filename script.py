@@ -64,7 +64,7 @@ def scrape_data(url):
             row.insert(0, district_name)
 
         df = pd.DataFrame(data, columns=headers)
-        logging.info(f"Table data with multiple links extracted from {url}")
+        logging.info(f"Table data from {url}")
         return df
 
     except requests.exceptions.RequestException as e:
