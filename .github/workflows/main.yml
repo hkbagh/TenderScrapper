@@ -2,7 +2,7 @@ name: Tender Scraper
 
 on:
   schedule:
-    - cron: '*/20 * * * *'  
+    - cron: '0 0,12 * * *'  # Runs at 00:00 (12 AM) and 12:00 (12 PM) every day
   workflow_dispatch:
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
         echo "Current working directory: $(pwd)"
         echo "Directory structure before execution:"
         ls -la
-        python -u test.py
+        python -u script.py
 
     - name: Check logs after execution
       run: |
